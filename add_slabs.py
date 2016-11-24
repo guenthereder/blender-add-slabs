@@ -23,8 +23,7 @@ class AddEdgeSlabs(bpy.types.Operator):
 
     total = bpy.props.IntProperty(name="Slope (Deg)", default=45, min=1, max=89)
 
-    """ TODO: this should be defined in the input and per input edge as weight """
-    ROTATION = math.pi/6.0
+    MAX_ROTATION = math.pi/2.0
     maxEdgeLength = 0.0
 
     def unit_vector(self, vector):
@@ -317,19 +316,35 @@ class AddEdgeSlabs(bpy.types.Operator):
                     v1 = OWMatrix * Obj.data.vertices[vertices[-3]].co
                     v2 = OWMatrix * Obj.data.vertices[vertices[-2]].co
                     v3 = OWMatrix * Obj.data.vertices[vertices[-1]].co
-            
+                    
+                    """ we use the uv y-value of the first vertex that defines 
+                        the current slab, e.g., for slab v1v2 we us the uv y-val
+                        of v1 
+                    """
+                    v1_idx = vertices[-3]
+                    uv_weight = Vector((-100,0.5))
+                    for uv_layer in Obj.data.uv_layers:
+                        uv_weight = uv_layer.data[v1_idx].uv    
+                    weight = math.pi/2.0 - (uv_weight.y * self.MAX_ROTATION)
+                
                     edgeCnt = edgeCnt + 1
-                    self.add_slab(context,v0,v1,v2,v3,edgeCnt,self.ROTATION)
-                
-                
+                    self.add_slab(context,v0,v1,v2,v3,edgeCnt,weight)
+                    
+                    
                 #first edges:
                 v0 = OWMatrix * Obj.data.vertices[vertices[-1]].co
                 v1 = OWMatrix * Obj.data.vertices[vertices[0] ].co
                 v2 = OWMatrix * Obj.data.vertices[vertices[1] ].co
                 v3 = OWMatrix * Obj.data.vertices[vertices[2] ].co
             
+                v1_idx = vertices[0]
+                uv_weight = Vector((-100,0.5))
+                for uv_layer in Obj.data.uv_layers:
+                    uv_weight = uv_layer.data[v1_idx].uv    
+                weight = math.pi/2.0 - (uv_weight.y * self.MAX_ROTATION)
+            
                 edgeCnt = edgeCnt + 1
-                self.add_slab(context,v0,v1,v2,v3,edgeCnt,self.ROTATION)
+                self.add_slab(context,v0,v1,v2,v3,edgeCnt,weight)
             
                 #last edge-1
                 v0 = OWMatrix * Obj.data.vertices[vertices[-3]].co
@@ -337,8 +352,14 @@ class AddEdgeSlabs(bpy.types.Operator):
                 v2 = OWMatrix * Obj.data.vertices[vertices[-1]].co
                 v3 = OWMatrix * Obj.data.vertices[vertices[0] ].co
             
+                v1_idx = vertices[-2]
+                uv_weight = Vector((-100,0.5))
+                for uv_layer in Obj.data.uv_layers:
+                    uv_weight = uv_layer.data[v1_idx].uv    
+                weight = math.pi/2.0 - (uv_weight.y * self.MAX_ROTATION)
+            
                 edgeCnt = edgeCnt + 1
-                self.add_slab(context,v0,v1,v2,v3,edgeCnt,self.ROTATION)
+                self.add_slab(context,v0,v1,v2,v3,edgeCnt,weight)
                 
                 #last edge
                 v0 = OWMatrix * Obj.data.vertices[vertices[-2]].co
@@ -346,8 +367,14 @@ class AddEdgeSlabs(bpy.types.Operator):
                 v2 = OWMatrix * Obj.data.vertices[vertices[0] ].co
                 v3 = OWMatrix * Obj.data.vertices[vertices[1] ].co
             
+                v1_idx = vertices[-1]
+                uv_weight = Vector((-100,0.5))
+                for uv_layer in Obj.data.uv_layers:
+                    uv_weight = uv_layer.data[v1_idx].uv    
+                weight = math.pi/2.0 - (uv_weight.y * self.MAX_ROTATION)
+            
                 edgeCnt = edgeCnt + 1
-                self.add_slab(context,v0,v1,v2,v3,edgeCnt,self.ROTATION)
+                self.add_slab(context,v0,v1,v2,v3,edgeCnt,weight)
             
         ###################################################################
 
