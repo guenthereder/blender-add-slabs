@@ -399,12 +399,13 @@ class AddEdgeSlabs(bpy.types.Operator):
             
         ###################################################################
 
-            # add complement of poylgon to visually remove slabs outside of P
+            # add complement of polygon to visually remove slabs outside of P
             cPolyVertices = []
             
             # CW Arranged
             idx = 4
             faceList = []
+            bboxAdded = False
 
             # BBox vertices
             for v in BBox:
@@ -415,9 +416,10 @@ class AddEdgeSlabs(bpy.types.Operator):
                     v = OWMatrix * Obj.data.vertices[v_idx].co
                     cPolyVertices.append(v)
                     faceList.append(idx)
-                    if v.x == min_x and v.y == min_y:
+                    if v.x == min_x and not bboxAdded: 
                         faceList.extend([0,1,2,3,0])
                         faceList.append(idx)
+                        bboxAdded = True
                     
                     idx = idx + 1
 
