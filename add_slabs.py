@@ -23,7 +23,7 @@ bl_info = {
     "name": "Add Edge/MC Slabs",
     "author": "Günther Eder",
     "version": (2, 0),
-    "blender": (2, 6, 3),
+    "blender": (2, 80, 0),
     "api": 33333,
     "location": "Object > Add Slabs",
     "description": "Adding Edge (and Motorcylce) Slabs",
@@ -102,15 +102,16 @@ class AddEdgeSlabs(bpy.types.Operator):
             r = random.random()
             g = random.random()
             b = random.random()
-            tempMat.diffuse_color = (r,g,b)
-            tempMat.diffuse_shader = 'LAMBERT'
-            tempMat.diffuse_intensity = 1.0
+            a = 1.0
+            tempMat.diffuse_color = (r,g,b,a)
+            #tempMat.diffuse_shader = 'LAMBERT'
+            #tempMat.diffuse_intensity = 1.0
             tempMat.specular_color = (0.9,0.9,0.9)
-            tempMat.specular_shader = 'COOKTORR'
-            tempMat.specular_intensity = 0.5
-            tempMat.alpha = 1.0
-            tempMat.ambient = 0.3
-            tempMat.emit = 0.2
+            #tempMat.specular_shader = 'COOKTORR'
+            #tempMat.specular_intensity = 0.5
+            #tempMat.alpha = 1.0
+            #tempMat.ambient = 0.3
+            #tempMat.emit = 0.2
         return tempMat
 
     def aquireOrCreateMaterial(self, passedName):
@@ -153,8 +154,9 @@ class AddEdgeSlabs(bpy.types.Operator):
         myobject.color = self.get_random_color()
 
         #myobject.location = bpy.context.scene.cursor_location
-        context.scene.objects.link(myobject)
-     
+        #context.scene.objects.link(myobject)
+        context.collection.objects.link(myobject)
+
         #Create mesh
         mymesh.from_pydata(planeVertices,[],planeFaces)
 
@@ -263,8 +265,8 @@ class AddEdgeSlabs(bpy.types.Operator):
         for e in Obj.data.edges :
             v0_idx = e.vertices[0]
             v1_idx = e.vertices[1]
-            v0 = OWMatrix * Obj.data.vertices[v0_idx].co
-            v1 = OWMatrix * Obj.data.vertices[v1_idx].co
+            v0 = OWMatrix @ Obj.data.vertices[v0_idx].co
+            v1 = OWMatrix @ Obj.data.vertices[v1_idx].co
             edgeLength = (v0 - v1).length
 
             if edgeLength > maxEdgeLength:
@@ -292,7 +294,8 @@ class AddEdgeSlabs(bpy.types.Operator):
         myobject.color = self.get_random_color()
                 
         #Set location and scene of object
-        bpy.context.scene.objects.link(myobject)
+        #bpy.context.scene.objects.link(myobject)
+        bpy.context.collection.objects.link(myobject)
      
         #Create mesh
         mymesh.from_pydata(vertices,[],faces)
@@ -325,7 +328,7 @@ class AddEdgeSlabs(bpy.types.Operator):
                     (max_x+(self.maxEdgeLength/2.0),max_y+(self.maxEdgeLength/2.0),0),
                     (max_x+(self.maxEdgeLength/2.0),min_y-(self.maxEdgeLength/2.0),0)]
 
-        ################# add edge slabs ################################
+            ################# add edge slabs ################################
             for face in mesh.polygons:
                 for vert in face.vertices:
                     vertices.append(vert)
@@ -333,10 +336,10 @@ class AddEdgeSlabs(bpy.types.Operator):
                     if len(vertices) < 4:
                         continue
                 
-                    v0 = OWMatrix * Obj.data.vertices[vertices[-4]].co
-                    v1 = OWMatrix * Obj.data.vertices[vertices[-3]].co
-                    v2 = OWMatrix * Obj.data.vertices[vertices[-2]].co
-                    v3 = OWMatrix * Obj.data.vertices[vertices[-1]].co
+                    v0 = OWMatrix @ Obj.data.vertices[vertices[-4]].co
+                    v1 = OWMatrix @ Obj.data.vertices[vertices[-3]].co
+                    v2 = OWMatrix @ Obj.data.vertices[vertices[-2]].co
+                    v3 = OWMatrix @ Obj.data.vertices[vertices[-1]].co
                     
                     """ we use the uv y-value of the first vertex that defines 
                         the current slab, e.g., for slab v1v2 we us the uv y-val
@@ -353,10 +356,10 @@ class AddEdgeSlabs(bpy.types.Operator):
                     
                     
                 #first edges:
-                v0 = OWMatrix * Obj.data.vertices[vertices[-1]].co
-                v1 = OWMatrix * Obj.data.vertices[vertices[0] ].co
-                v2 = OWMatrix * Obj.data.vertices[vertices[1] ].co
-                v3 = OWMatrix * Obj.data.vertices[vertices[2] ].co
+                v0 = OWMatrix @ Obj.data.vertices[vertices[-1]].co
+                v1 = OWMatrix @ Obj.data.vertices[vertices[0] ].co
+                v2 = OWMatrix @ Obj.data.vertices[vertices[1] ].co
+                v3 = OWMatrix @ Obj.data.vertices[vertices[2] ].co
             
                 v1_idx = vertices[0]
                 uv_weight = Vector((-100,0.5))
@@ -368,10 +371,10 @@ class AddEdgeSlabs(bpy.types.Operator):
                 self.add_slab(context,v0,v1,v2,v3,edgeCnt,weight)
             
                 #last edge-1
-                v0 = OWMatrix * Obj.data.vertices[vertices[-3]].co
-                v1 = OWMatrix * Obj.data.vertices[vertices[-2]].co
-                v2 = OWMatrix * Obj.data.vertices[vertices[-1]].co
-                v3 = OWMatrix * Obj.data.vertices[vertices[0] ].co
+                v0 = OWMatrix @ Obj.data.vertices[vertices[-3]].co
+                v1 = OWMatrix @ Obj.data.vertices[vertices[-2]].co
+                v2 = OWMatrix @ Obj.data.vertices[vertices[-1]].co
+                v3 = OWMatrix @ Obj.data.vertices[vertices[0] ].co
             
                 v1_idx = vertices[-2]
                 uv_weight = Vector((-100,0.5))
@@ -383,10 +386,10 @@ class AddEdgeSlabs(bpy.types.Operator):
                 self.add_slab(context,v0,v1,v2,v3,edgeCnt,weight)
                 
                 #last edge
-                v0 = OWMatrix * Obj.data.vertices[vertices[-2]].co
-                v1 = OWMatrix * Obj.data.vertices[vertices[-1]].co
-                v2 = OWMatrix * Obj.data.vertices[vertices[0] ].co
-                v3 = OWMatrix * Obj.data.vertices[vertices[1] ].co
+                v0 = OWMatrix @ Obj.data.vertices[vertices[-2]].co
+                v1 = OWMatrix @ Obj.data.vertices[vertices[-1]].co
+                v2 = OWMatrix @ Obj.data.vertices[vertices[0] ].co
+                v3 = OWMatrix @ Obj.data.vertices[vertices[1] ].co
             
                 v1_idx = vertices[-1]
                 uv_weight = Vector((-100,0.5))
@@ -397,7 +400,7 @@ class AddEdgeSlabs(bpy.types.Operator):
                 edgeCnt = edgeCnt + 1
                 self.add_slab(context,v0,v1,v2,v3,edgeCnt,weight)
             
-        ###################################################################
+            ###################################################################
 
             # add complement of polygon to visually remove slabs outside of P
             cPolyVertices = []
@@ -413,7 +416,7 @@ class AddEdgeSlabs(bpy.types.Operator):
 
             for face in mesh.polygons:
                 for v_idx in face.vertices:
-                    v = OWMatrix * Obj.data.vertices[v_idx].co
+                    v = OWMatrix @ Obj.data.vertices[v_idx].co
                     cPolyVertices.append(v)
                     faceList.append(idx)
                     if v.x == min_x and not bboxAdded: 
