@@ -22,7 +22,7 @@
 bl_info = {
     "name": "Add Edge/MC Slabs",
     "author": "Günther Eder",
-    "version": (2, 0),
+    "version": (2, 1),
     "blender": (2, 80, 0),
     "api": 33333,
     "location": "Object > Add Slabs",
@@ -323,10 +323,10 @@ class AddEdgeSlabs(bpy.types.Operator):
 
 
             # CW arranged!
-            BBox = [(min_x-(self.maxEdgeLength/2.0),min_y-(self.maxEdgeLength/2.0),0),
-                    (min_x-(self.maxEdgeLength/2.0),max_y+(self.maxEdgeLength/2.0),0),
-                    (max_x+(self.maxEdgeLength/2.0),max_y+(self.maxEdgeLength/2.0),0),
-                    (max_x+(self.maxEdgeLength/2.0),min_y-(self.maxEdgeLength/2.0),0)]
+            BBox = [(min_x-(self.maxEdgeLength),min_y-(self.maxEdgeLength),0),
+                    (min_x-(self.maxEdgeLength),max_y+(self.maxEdgeLength),0),
+                    (max_x+(self.maxEdgeLength),max_y+(self.maxEdgeLength),0),
+                    (max_x+(self.maxEdgeLength),min_y-(self.maxEdgeLength),0)]
 
             ################# add edge slabs ################################
             for face in mesh.polygons:
@@ -419,8 +419,12 @@ class AddEdgeSlabs(bpy.types.Operator):
                     v = OWMatrix @ Obj.data.vertices[v_idx].co
                     cPolyVertices.append(v)
                     faceList.append(idx)
-                    if v.x == min_x and not bboxAdded: 
-                        faceList.extend([0,1,2,3,0])
+                    if v.x == min_x and (v.y == min_y or v.y == max_y) and not bboxAdded: 
+                        if v.y == min_y:
+                            faceList.extend([0,1,2,3,0])
+                        else:
+                            faceList.extend([1,2,3,0,1])
+
                         faceList.append(idx)
                         bboxAdded = True
                     
